@@ -108,6 +108,8 @@ class CallStats:
 
         self._call_state = CallState.created
 
+        self._future_events = []
+
         self.calculate_future_events()
 
 
@@ -160,7 +162,7 @@ class CallStats:
         if len(self._future_events) == 0:
             return None
 
-        if self._future_events[0].time < current_time:
+        if self._future_events[0].time <= current_time:
             ev = self._future_events.pop(0)
             return ev
         else:

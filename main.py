@@ -1,5 +1,7 @@
 from simulation_constant_call import SimulationConstantCall
 from simulation_free_agent import SimulationFreeAgent
+from simulation_genetic import SimulationGenetic
+from simulation_analytic import SimulationAnalytic
 
 from calling_list import CallingList
 import logging as log
@@ -54,8 +56,10 @@ def main():
     cl.parse()
 
     ##while cl.get_number_calls() > 0:
-    cc = SimulationConstantCall(1, 1000)
+    #cc = SimulationConstantCall(1)
     # cc = SimulationFreeAgent()
+    #cc = SimulationGenetic()
+    cc = SimulationAnalytic()
     cc.start(cl)
 
 

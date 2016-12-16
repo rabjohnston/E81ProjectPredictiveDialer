@@ -1,11 +1,11 @@
 from unittest import TestCase
 from calling_list import CallingList
+from callstats import CallStats, QueuedStats
 
 FILENAME = '../test.csv'
 
 
 class TestCallingList(TestCase):
-
     def test_load(self):
         cl = CallingList()
         self.assertEqual(len(cl._df), 0)
@@ -13,7 +13,6 @@ class TestCallingList(TestCase):
         cl.load(FILENAME)
 
         self.assertGreater(len(cl._df), 0)
-
 
     def test_parse(self):
         cl = CallingList()
@@ -26,7 +25,6 @@ class TestCallingList(TestCase):
 
         last_call = cl._calls[99]
         self.assertEqual(last_call.unique_id, '0cb53c48fef5cdd7:1e29b99:1439ecae6c3:-3d3a')
-
 
     def test_get_call(self):
         cl = CallingList()
@@ -46,8 +44,6 @@ class TestCallingList(TestCase):
 
         self.assertEqual(len(cl._calls), 99)
 
-
-
     def test_get_queued_call(self):
         cl = CallingList()
         cl.load(FILENAME)
@@ -64,3 +60,21 @@ class TestCallingList(TestCase):
         second_call_get = cl.get_queued_call()
         self.assertEqual(second_call_get.unique_id, '0cb53c48fef5cdd7:a1aa85:142e53206f3:-7f71')
 
+
+    # def test_create_with_existing_lists(self):
+    #     calls = []
+    #     queued = []
+    #     c = CallStats('', None, None,
+    #                   None, None, None, None,
+    #                   None, None, None, None)
+    #
+    #     calls.append(c)
+    #
+    #     q = QueuedStats('', None, None,
+    #                     None, None, None, None,
+    #                     None, None, None, None)
+    #     queued.append(q)
+    #
+    #     cl = CallingList(calls=calls, queued_calls=queued)
+    #     self.assertEquals(len(cl._calls) == 1)
+    #     self.assertEquals(len(cl._queued_calls) == 1)

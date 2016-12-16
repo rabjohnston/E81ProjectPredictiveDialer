@@ -7,11 +7,23 @@ from callstats import CallStats, QueuedStats
 
 class CallingList:
 
-    def __init__(self):
+    def __init__(self, calls=None, queued_calls=None):
         self._df = {}
 
-        self._calls = []
-        self._queued_calls = []
+        if calls is None:
+            self._calls = []
+            log.info('Calls: None')
+        else:
+            self._calls = calls
+            log.info('Calls size: {}'.format(len(calls)))
+
+        if queued_calls is None:
+            self._queued_calls = []
+        else:
+            self._queued_calls = queued_calls
+
+
+
         self._next_queued_call = 0
 
 

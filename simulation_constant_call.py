@@ -5,19 +5,18 @@ import logging as log
 
 class SimulationConstantCall(Simulation):
 
-    def __init__(self, number_calls = 1, interval=1000):
-        self._number_calls = number_calls
+    def __init__(self, dial_level = 1, stop_immediately_when_no_calls = False):
 
-        num, rem = divmod(interval, self.EPOCH)
+        Simulation.__init__(self, stop_immediately_when_no_calls)
 
-        if num == 0:
-            # Ensure the interval is at least the duration of an epoch
-            self._interval = self.EPOCH
-        else:
-            # Ensure the interval is multiple of the epoch
-            self._interval = num * self.EPOCH
+        if dial_level < 0:
+            dial_level = 0
 
-        Simulation.__init__(self)
+        self._dial_level = dial_level
+
+        self._interval = Simulation.ONE_SECOND
+
+        self._remaining_calls_to_make = 0
 
 
     def calculate_calls(self):
@@ -25,7 +24,8 @@ class SimulationConstantCall(Simulation):
         Make a constant number of calls per defined interval
         """
         if self._current_time % self._interval == 0:
-            return self._number_calls
+            calls_to_make, self._remaining_calls_to_make = divmod(self._dial_level + self._remaining_calls_to_make, 1)
+            return calls_to_make
         else:
             return 0
 

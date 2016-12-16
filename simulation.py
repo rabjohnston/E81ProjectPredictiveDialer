@@ -22,10 +22,9 @@ class Simulation:
     # The number of milliseconds between each snapshot of the current state of the call centre
     SAVE_HISTORY_INTERVAL = ONE_MINUTE
 
-
-    def __init__(self):
+    def __init__(self, stop_immediately_when_no_calls):
         self._df = {}
-        self._calling_list = CallingList()
+        self._calling_list = None
 
         self._number_free_agents = 0
         self._number_busy_agents = 0
@@ -79,6 +78,11 @@ class Simulation:
         # and log off
         self._shift_over = False
 
+        # The legal limit in a lot of countries is max abandonment rate of 5%
+        self._max_abandonment_rate = 0.05
+
+        self.stop_immediately_when_no_calls = stop_immediately_when_no_calls
+
 
 
 
@@ -105,6 +109,7 @@ class Simulation:
     def start(self, calling_list, duration_shift = DEFAULT_SHIFT_LENGTH, number_agents=40):
 
         log.info('Running simulation for {} mins with {} agents'.format(self.millis_to_hours(duration_shift), number_agents))
+        log.debug('stop_immediately set to {}'.format(self.stop_immediately_when_no_calls))
 
         self._number_agents = number_agents
         self._number_free_agents = number_agents
@@ -121,8 +126,8 @@ class Simulation:
 
             # We finish whenever we haven't got any more calls to go and the remaining calls in the system
             # finish.
-            if not self._still_have_calls or self._shift_over:
-                if self.number_all_calls() == 0:
+            if self.dialer_stopping():
+                if self.stop_immediately_when_no_calls or (self.number_all_calls() == 0):
                     still_going = False
 
         df = pd.DataFrame.from_dict(self._history, orient='index')
@@ -133,6 +138,15 @@ class Simulation:
 
         self.print_report()
         self.print_end_report()
+
+
+    def dialer_stopping(self):
+        """
+        The dialer begins to stop whenever there are no calls left or the shift is over.
+        Note: we can't stop straight away as we have calls in progress that we need to complete.
+        :return:
+        """
+        return not self._still_have_calls or self._shift_over
 
 
     def _tick(self):
@@ -158,17 +172,22 @@ class Simulation:
 
 
     def generate_call(self, number_calls=1):
-        log.debug('{}: make call'.format(self.millis_to_hours(self._current_time)))
+        #log.debug('{}: make call'.format(self.millis_to_hours(self._current_time)))
         call = None
         for i in range(0, number_calls):
-            call = self._calling_list.get_call()
+            call = self.get_next_calling_list_entry(call)
             if call is not None:
+                log.debug('{}: make call: {}, outcome: {}'.format(self.millis_to_hours(self._current_time), call.unique_id, call.outcome_code))
                 self._created_calls[call.unique_id] = call
                 call.dial(self._current_time)
                 self.total_number_calls += 1
             else:
                 log.info('No more calls')
         return call is not None
+
+
+    def get_next_calling_list_entry(self, call):
+        return self._calling_list.get_call()
 
 
     def handle_call_events(self):
@@ -332,10 +351,16 @@ class Simulation:
 
 
     def print_report(self):
+        created_calls = self._created_calls.values()
+
+        mystr = ''
+        for call in created_calls:
+            mystr += '{} '.format( call.unique_id)
+
         log.info('')
         log.info('Report:')
         log.info('  current_time:                    {}'.format(self.millis_to_hours(self._current_time)))
-        log.info('  number_created_calls:            {}'.format(self.number_created_calls()))
+        log.info('  number_created_calls:            {} ({})'.format(self.number_created_calls(), mystr))
         log.info('  number_ringing_calls:            {}'.format(self.number_ringing_calls()))
         log.info('  number_queued_calls:             {}'.format(self.number_queued_calls()))
         log.info('  number_talking_calls:            {}'.format(self.number_talking_calls()))
@@ -354,8 +379,8 @@ class Simulation:
     def print_end_report(self):
         log.info('')
         log.info('Report:')
-        log.info('  abandonment rate: {}'.format( self._current_abandonment_rate ))
-        log.info('  talk time:        {:.2f}% ({:.2f} mins)'.format(self._current_talk_time, self._current_talk_time * 60))
+        log.info('  abandonment rate: {:02.2f}%'.format( self._current_abandonment_rate * 100 ))
+        log.info('  talk time:        {:.2f}% ({:.2f} mins)'.format(self._current_talk_time * 100, self._current_talk_time * 60))
 
 
     def millis_to_hours(self, millis):
@@ -367,6 +392,11 @@ class Simulation:
 
 
     def calculate_calls(self):
+        """
+        This is where the predictive dialer implementations implement their individual algorithms
+        to calculate the number of calls to make.
+        :return: an integer that represents the number of calls for the dialer to make
+        """
         return 0
 
 
