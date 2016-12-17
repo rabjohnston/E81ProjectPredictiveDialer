@@ -14,20 +14,21 @@ class SimulationConstantCall(Simulation):
 
         self._dial_level = dial_level
 
-        self._interval = Simulation.ONE_SECOND
+        # self._interval = Simulation.ONE_SECOND
+        #
+        # self._remaining_calls_to_make = 0
 
-        self._remaining_calls_to_make = 0
 
-
-    def calculate_calls(self):
+    def recalc_dial_level(self):
         """
         Make a constant number of calls per defined interval
         """
-        if self._current_time % self._interval == 0:
-            calls_to_make, self._remaining_calls_to_make = divmod(self._dial_level + self._remaining_calls_to_make, 1)
-            return calls_to_make
-        else:
-            return 0
+        # if self._current_time % self._interval == 0:
+        #     calls_to_make, self._remaining_calls_to_make = divmod(self._dial_level + self._remaining_calls_to_make, 1)
+        #     return calls_to_make
+        # else:
+        #     return 0
+        return self._dial_level
 
 
 

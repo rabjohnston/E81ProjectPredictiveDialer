@@ -22,13 +22,15 @@ class Simulation:
     # The number of milliseconds between each snapshot of the current state of the call centre
     SAVE_HISTORY_INTERVAL = ONE_MINUTE
 
-    def __init__(self, stop_immediately_when_no_calls):
+    MAX_CALLS_TO_GENERATE = 100
+
+    def __init__(self, stop_immediately_when_no_calls, number_agents=40):
         self._df = {}
         self._calling_list = None
 
-        self._number_free_agents = 0
+        self._number_agents = number_agents
+        self._number_free_agents = number_agents
         self._number_busy_agents = 0
-        self._number_agents = 0
 
         self._current_talk_time = 0
         self._current_abandonment_rate = 0
@@ -79,9 +81,21 @@ class Simulation:
         self._shift_over = False
 
         # The legal limit in a lot of countries is max abandonment rate of 5%
-        self._max_abandonment_rate = 0.05
+        self.max_abandonment_rate = 0.05
 
         self.stop_immediately_when_no_calls = stop_immediately_when_no_calls
+
+        # The number of calls to make per second. If fractional then the remainder will be saved for the next epoch
+        self._dial_level = 1
+
+        self._dial_level_recalc_period = Simulation.ONE_MINUTE
+
+        self._fractional_call = 0
+
+        # We'll not let the dial level get above a certain level
+        self.max_dial_level = number_agents / 4
+
+
 
 
 
@@ -101,18 +115,22 @@ class Simulation:
     def number_disconnected_calls(self):
         return len(self._disconnected_calls)
 
+    def number_in_progress_calls(self):
+        return self.number_created_calls() + self.number_ringing_calls()
+
     def number_all_calls(self):
         return self.number_created_calls() + self.number_ringing_calls()  \
                 + self.number_queued_calls() + self.number_talking_calls()
 
+    def number_trunks_in_use(self):
+        return self.number_created_calls() + self.number_queued_calls() + self.number_talking_calls() + self.number_ringing_calls()
 
-    def start(self, calling_list, duration_shift = DEFAULT_SHIFT_LENGTH, number_agents=40):
+    def start(self, calling_list, duration_shift = DEFAULT_SHIFT_LENGTH):
 
-        log.info('Running simulation for {} mins with {} agents'.format(self.millis_to_hours(duration_shift), number_agents))
+        log.info('Running simulation for {} mins with {} agents'.format(self.millis_to_hours(duration_shift),
+                                                                        self._number_agents))
         log.debug('stop_immediately set to {}'.format(self.stop_immediately_when_no_calls))
 
-        self._number_agents = number_agents
-        self._number_free_agents = number_agents
         self._calling_list = calling_list
         self._duration_shift = duration_shift
 
@@ -166,15 +184,24 @@ class Simulation:
 
     def calculate(self):
 
-        calls_to_make = self.calculate_calls()
-        if calls_to_make > 0:
-            self._still_have_calls = self.generate_call(calls_to_make)
+        if self._current_time % self._dial_level_recalc_period == 0:
+            self._dial_level = self.recalc_dial_level()
+
+        if self._current_time % Simulation.ONE_SECOND == 0:
+            calls_to_make, self._fractional_call = divmod(self._dial_level + self._fractional_call, 1)
+            if calls_to_make > 0:
+
+                # Make sure the algorithm doesn't give us back something bizarre. This may happen at the beginning of
+                # the shift while some algorithms are still trying to get some data.
+                calls_to_make = min(self.MAX_CALLS_TO_GENERATE, calls_to_make)
+
+                self._still_have_calls = self.generate_call(calls_to_make)
 
 
     def generate_call(self, number_calls=1):
         #log.debug('{}: make call'.format(self.millis_to_hours(self._current_time)))
         call = None
-        for i in range(0, number_calls):
+        for i in range(0, int(number_calls)):
             call = self.get_next_calling_list_entry(call)
             if call is not None:
                 log.debug('{}: make call: {}, outcome: {}'.format(self.millis_to_hours(self._current_time), call.unique_id, call.outcome_code))
@@ -357,23 +384,23 @@ class Simulation:
         for call in created_calls:
             mystr += '{} '.format( call.unique_id)
 
-        log.info('')
-        log.info('Report:')
-        log.info('  current_time:                    {}'.format(self.millis_to_hours(self._current_time)))
-        log.info('  number_created_calls:            {} ({})'.format(self.number_created_calls(), mystr))
-        log.info('  number_ringing_calls:            {}'.format(self.number_ringing_calls()))
-        log.info('  number_queued_calls:             {}'.format(self.number_queued_calls()))
-        log.info('  number_talking_calls:            {}'.format(self.number_talking_calls()))
-        log.info('  number_disconnected_calls:       {}'.format(self.number_disconnected_calls()))
-        log.info('  number_free_agents:              {}'.format(self._number_free_agents))
-        log.info('  number_busy_agents:              {}'.format(self._number_busy_agents))
-        log.info('  total_number_answered_calls:     {}'.format(self.total_number_answered_calls))
-        log.info('  total_number_not_answered_calls: {}'.format(self.total_number_not_answered_calls))
-        log.info('  total_number_abandon_calls:      {}'.format(self.total_number_abandon_calls))
-        log.info('  total_number_talking_calls:      {}'.format(self.total_number_talking_calls))
-        log.info('  total_number_calls:              {}'.format(self.total_number_calls))
-        log.info('  total_agent_idle_time:           {}'.format(self.total_agent_idle_time))
-        log.info('  total_agent_talk_time:           {}'.format(self.total_agent_talk_time))
+        log.debug('')
+        log.debug('Report:')
+        log.debug('  current_time:                    {}'.format(self.millis_to_hours(self._current_time)))
+        log.debug('  number_created_calls:            {} ({})'.format(self.number_created_calls(), mystr))
+        log.debug('  number_ringing_calls:            {}'.format(self.number_ringing_calls()))
+        log.debug('  number_queued_calls:             {}'.format(self.number_queued_calls()))
+        log.debug('  number_talking_calls:            {}'.format(self.number_talking_calls()))
+        log.debug('  number_disconnected_calls:       {}'.format(self.number_disconnected_calls()))
+        log.debug('  number_free_agents:              {}'.format(self._number_free_agents))
+        log.debug('  number_busy_agents:              {}'.format(self._number_busy_agents))
+        log.debug('  total_number_answered_calls:     {}'.format(self.total_number_answered_calls))
+        log.debug('  total_number_not_answered_calls: {}'.format(self.total_number_not_answered_calls))
+        log.debug('  total_number_abandon_calls:      {}'.format(self.total_number_abandon_calls))
+        log.debug('  total_number_talking_calls:      {}'.format(self.total_number_talking_calls))
+        log.debug('  total_number_calls:              {}'.format(self.total_number_calls))
+        log.debug('  total_agent_idle_time:           {}'.format(self.total_agent_idle_time))
+        log.debug('  total_agent_talk_time:           {}'.format(self.total_agent_talk_time))
 
 
     def print_end_report(self):
@@ -391,7 +418,7 @@ class Simulation:
         return '{:02d}:{:02d}:{:02d}.{}'.format(hours, mins, secs, millis)
 
 
-    def calculate_calls(self):
+    def recalc_dial_level(self):
         """
         This is where the predictive dialer implementations implement their individual algorithms
         to calculate the number of calls to make.

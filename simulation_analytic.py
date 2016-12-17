@@ -16,21 +16,14 @@ class SimulationAnalytic(Simulation):
         
         self._max_traffic = 0;
 
-        self._prob_answer = 0.36;
-
-        self._prob_long_call = 0.22;
-
-        self._prob_short_call = 1 - self._prob_long_call;
-
-        self._ave_length_long_call = 430000
-
-        self._ave_length_short_call = 180000
-        
-        # We assume trunks are infinite. This is valid if we have IP telephony as trunks are virtual
-        self._available_trunks = 100000
+        # The paper seems to limit the trunks to double the number of agents
+        self._max_trunks = 120
 
 
-    def calculate_calls(self):
+
+
+
+    def recalc_dial_level(self):
         """
         Ensure the number of in progress calls match the number of free agents
         """
@@ -40,20 +33,28 @@ class SimulationAnalytic(Simulation):
         if self._current_time < self.ONE_MINUTE:
             if self._current_time % self.ONE_SECOND == 0:
                 number_calls_to_make = 1
+        elif self._current_abandonment_rate > self._max_abandonment_rate:
+            number_calls_to_make = 0
         else:
             # Tmax = N * AO
             self._max_traffic = self._number_free_agents * self._desired_agent_occupation_rate
 
             # Calculate probability of answer, p
-            self._prob_answer = self.total_number_answered_calls /\
-                                ( self.total_number_answered_calls + self.total_number_not_answered_calls)
+            self._prob_answer = self.total_number_answered_calls / self.total_number_calls
 
-            denom = self._prob_answer * (( self._prob_long_call / self._ave_length_long_call) +
-                                             (self._prob_short_call / self._ave_length_short_call))
-            calls = (self._max_traffic / denom) - self.number_ringing_calls()
+            ave_length_call = (self.total_agent_talk_time / 1000) / self.total_number_talking_calls
 
-            calls = min(self._available_trunks, max(0, calls))
-            log.debug('calls: {}'.format(calls))
+            denom = self._prob_answer * ave_length_call
+
+            # denom = self._prob_answer * (( self._prob_long_call / self._ave_length_long_call) +
+            #                                  (self._prob_short_call / self._ave_length_short_call))
+
+            calls = (self._max_traffic / denom) - (self.number_ringing_calls() + self.number_created_calls())
+
+            available_trunks = self._max_trunks - self.number_trunks_in_use()
+
+            number_calls_to_make = min(available_trunks, max(0, calls))
+            log.debug('calls: {}'.format(number_calls_to_make))
 
 
 
@@ -61,5 +62,5 @@ class SimulationAnalytic(Simulation):
             if number_calls_to_make < 0:
                 number_calls_to_make = 0
 
-        return number_calls_to_make
+        return math.floor(number_calls_to_make)
 

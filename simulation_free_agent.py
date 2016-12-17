@@ -5,10 +5,12 @@ import logging as log
 class SimulationFreeAgent(Simulation):
 
     def __init__(self):
-        Simulation.__init__(self)
+        Simulation.__init__(self, False)
+
+        self._dial_level_recalc_period = Simulation.EPOCH
 
 
-    def calculate_calls(self):
+    def recalc_dial_level(self):
         """
         Ensure the number of in progress calls match the number of free agents
         """

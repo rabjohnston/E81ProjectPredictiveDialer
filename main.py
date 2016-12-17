@@ -5,25 +5,16 @@ from simulation_analytic import SimulationAnalytic
 
 from calling_list import CallingList
 import logging as log
+import random
 import sys
 
 
-# def setup_logging():
-#     log_formatter = log.Formatter("%(asctime)-15s %(levelname)-8s %(message)s")
-#     root_logger = log.getLogger()
-#
-#     file_handler = log.FileHandler("logfile.log", mode='w+')
-#     file_handler.setFormatter(log_formatter)
-#     file_handler.setLevel(log.DEBUG)
-#     root_logger.addHandler(file_handler)
-#
-#     console_handler = log.StreamHandler(sys.stdout)
-#     console_handler.setFormatter(log_formatter)
-#     root_logger.addHandler(console_handler)
-
-
-def setup_logging2():
-    # set up logging to file - see previous section for more details
+def setup_logging():
+    """
+    Setup the logging. INFO and above are logged to console.
+    DEBUG and above is logged to file.
+    :return:
+    """
     log.basicConfig(level=log.DEBUG,
                     format='%(asctime)s %(levelname)-8s %(message)s',
                     datefmt='%m-%d %H:%M',
@@ -41,14 +32,15 @@ def setup_logging2():
 
 
 def main():
-    # log.basicConfig(level=log.DEBUG, filename="logfile", filemode="w+",
-    #                    format="%(asctime)-15s %(levelname)-8s %(message)s")
 
-    setup_logging2()
+    setup_logging()
 
     log.info('------------------------------------------------------------------------------------------------------')
     log.info('Start')
     log.info('------------------------------------------------------------------------------------------------------')
+
+    # Make sure we can reproduce our results
+    random.seed(42)
 
     # Create one calling list
     cl = CallingList()
@@ -56,10 +48,10 @@ def main():
     cl.parse()
 
     ##while cl.get_number_calls() > 0:
-    #cc = SimulationConstantCall(1)
-    # cc = SimulationFreeAgent()
-    #cc = SimulationGenetic()
-    cc = SimulationAnalytic()
+    ##cc = SimulationConstantCall(0.5)
+    #cc = SimulationFreeAgent()
+    cc = SimulationGenetic()
+    #cc = SimulationAnalytic()
     cc.start(cl)
 
 
