@@ -150,7 +150,7 @@ class Simulation:
                 if self.stop_immediately_when_no_calls or (self.number_all_calls() == 0):
                     still_going = False
 
-        if self.generate_history_file:
+        if self._generate_history_file:
             df = pd.DataFrame.from_dict(self._history, orient='index')
             log.debug(df)
             df.to_pickle('history.pkl')
