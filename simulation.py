@@ -95,7 +95,7 @@ class Simulation:
         # We'll not let the dial level get above a certain level
         self.max_dial_level = number_agents / 4
 
-
+        self._stored_calling_list_entry = []
 
 
 
@@ -294,6 +294,9 @@ class Simulation:
             self.release_agent()
 
         self._disconnected_calls[call.unique_id] = call
+
+        # Save this calling list entry for later use by genetic algorithm
+        self._stored_calling_list_entry.append(call)
 
 
     def release_agent(self):

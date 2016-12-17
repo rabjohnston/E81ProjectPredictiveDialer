@@ -41,16 +41,12 @@ class SimulationGenetic(SimulationConstantCall):
     def __init__(self):
         SimulationConstantCall.__init__(self)
 
-        self._stored_calling_list_entry = []
+
 
         self._last_stored_calling_list_entry = 0
 
         self.RECALC_INTERVAL = Simulation.ONE_MINUTE * 30
         self.RECALC_WINDOW = Simulation.ONE_MINUTE * 10
-
-        # When initialising the chromosones we need a window to define the upper and lower limit
-        # of of values that the random generator can take on.
-        self.CHROMOSONE_INIT_WINDOW = 2
 
         self.population_size = 11
 
@@ -68,14 +64,14 @@ class SimulationGenetic(SimulationConstantCall):
         self._mutate_probability = 0.1
 
 
-    def get_next_calling_list_entry(self, call):
-        call = self._calling_list.get_call()
-
-        if call is not None:
-            # Save this calling list entry for later use by genetic algorithm
-            self._stored_calling_list_entry.append(call)
-
-        return call
+    # def get_next_calling_list_entry(self, call):
+    #     call = self._calling_list.get_call()
+    #
+    #     if call is not None:
+    #         # Save this calling list entry for later use by genetic algorithm
+    #         self._stored_calling_list_entry.append(call)
+    #
+    #     return call
 
 
     def recalc_dial_level(self):
