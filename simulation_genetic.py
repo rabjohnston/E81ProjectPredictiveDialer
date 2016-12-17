@@ -43,8 +43,8 @@ class SimulationGenetic(SimulationConstantCall):
 
         self._last_stored_calling_list_entry = 0
 
-        self.RECALC_INTERVAL = Simulation.ONE_MINUTE * 30
-        self.RECALC_WINDOW = Simulation.ONE_MINUTE * 10
+        self._recalc_interval = Simulation.ONE_MINUTE * 15
+        self._recalc_window = Simulation.ONE_MINUTE * 10
 
         self.population_size = 11
 
@@ -81,7 +81,7 @@ class SimulationGenetic(SimulationConstantCall):
         # Determine whether we need to recalculate the dial level. As we are taking a slice of the past calls
         # (determined by RECALC_WINDOW) we need to ensure that enough time has elapsed at the beginning of the campaign
         # to ensure we have enough data to run the first calculation.
-        if (self._current_time % self.RECALC_INTERVAL == 0) and self._current_time >= self.RECALC_WINDOW \
+        if (self._current_time % self._recalc_interval == 0) and self._current_time >= self._recalc_window \
                 and not self.dialer_stopping():
             self._dial_level = self.rerun_past_calls()
 

@@ -4,8 +4,8 @@ import logging as log
 
 class SimulationFreeAgent(Simulation):
 
-    def __init__(self):
-        Simulation.__init__(self, False)
+    def __init__(self, stop_immediately_when_no_calls = False, number_agents=40, generate_history_file=True):
+        Simulation.__init__(self, stop_immediately_when_no_calls, number_agents=number_agents, generate_history_file=generate_history_file)
 
         self._dial_level_recalc_period = Simulation.EPOCH
 

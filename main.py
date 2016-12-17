@@ -58,15 +58,15 @@ def main():
 
     # The constant rate dialer. Changing the parameter will change the dial level. This algorithm will complete
     # fairly quickly.
-    ##cc = SimulationConstantCall(0.5)
+    #cc = SimulationConstantCall(2.5, number_agents=40)
 
     # The progressive dialer (aka free agent). This algorithm waits until an agent is free and then generates
     # a call for them. Similar to the constant call algorithm, this one is also quick.
-    #cc = SimulationFreeAgent()
+    #cc = SimulationFreeAgent(number_agents=80)
 
     # The generic algorithm. This one will take a long time to run and outputs a large debug logfile (hundreds of Mb)
     # You might want to comment out the logging to file.
-    cc = SimulationGenetic()
+    #cc = SimulationGenetic(number_agents=80)
 
     # The analytic algorithm. There are problems with this and I would question whether it will even work using real
     # data rather than synthetic data.
