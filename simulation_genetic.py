@@ -39,9 +39,7 @@ class SimulationGenetic(SimulationConstantCall):
             return fitness
 
     def __init__(self, number_agents=40):
-        SimulationConstantCall.__init__(self, number_agents=40)
-
-
+        SimulationConstantCall.__init__(self, number_agents=number_agents)
 
         self._last_stored_calling_list_entry = 0
 
@@ -202,7 +200,10 @@ class SimulationGenetic(SimulationConstantCall):
 
 
     def run_simulation(self, dial_level, cl):
-        scc = SimulationConstantCall(dial_level, stop_immediately_when_no_calls=True, generate_history_file=False)
+        scc = SimulationConstantCall(dial_level,
+                                     stop_immediately_when_no_calls=True,
+                                     number_agents=self._number_agents,
+                                     generate_history_file=False)
         scc.start(cl)
 
         return scc._current_talk_time, scc._current_abandonment_rate
