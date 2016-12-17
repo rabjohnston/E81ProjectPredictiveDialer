@@ -12,7 +12,7 @@ import sys
 def setup_logging():
     """
     Setup the logging. INFO and above are logged to console.
-    DEBUG and above is logged to file.
+    DEBUG and above is logged to file (this can stretch to hundreds of Mb if running the genetic algorithm)
     :return:
     """
     log.basicConfig(level=log.DEBUG,
@@ -47,10 +47,20 @@ def main():
     cl.load('small.csv')
     cl.parse()
 
-    ##while cl.get_number_calls() > 0:
+    # The constant rate dialer. Changing the parameter will change the dial level. This algorithm will complete
+    # fairly quickly.
     ##cc = SimulationConstantCall(0.5)
+
+    # The progressive dialer (aka free agent). This algorithm waits until an agent is free and then generates
+    # a call for them. Similar to the constant call algorithm, this one is also quick.
     #cc = SimulationFreeAgent()
+
+    # The generic algorithm. This one will take a long time to run and outputs a large debug logfile (hundreds of Mb)
+    # You might want to comment out the logging to file.
     cc = SimulationGenetic()
+
+    # The analytic algorithm. There are problems with this and I would question whether it will even work using real
+    # data rather than synthetic data.
     #cc = SimulationAnalytic()
     cc.start(cl)
 
