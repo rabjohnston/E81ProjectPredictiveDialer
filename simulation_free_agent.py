@@ -26,19 +26,3 @@ class SimulationFreeAgent(Simulation):
 
         return number_calls_to_make
 
-# INFO     Report:
-# INFO       current_time:                    02:01:06.800
-# INFO       number_created_calls:            0
-# INFO       number_ringing_calls:            0
-# INFO       number_queued_calls:             0
-# INFO       number_talking_calls:            0
-# INFO       number_disconnected_calls:       3966
-# INFO       number_free_agents:              0
-# INFO       number_busy_agents:              0
-# INFO       total_number_answered_calls:     1907
-# INFO       total_number_not_answered_calls: 2059
-# INFO       total_number_abandon_calls:      0
-# INFO       total_number_talking_calls:      1907
-# INFO       total_number_calls:              3966
-# INFO       total_agent_idle_time:           172745800
-# INFO       total_agent_talk_time:           115778600

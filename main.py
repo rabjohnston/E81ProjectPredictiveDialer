@@ -32,6 +32,15 @@ def setup_logging():
 
 
 def main():
+    """
+    Simple wrapper to run a simulation using different algorithms.
+
+    Requires small.csv file - too big for Canvas. Can be found on github repo :
+
+      https://github.com/rabjohnston/E81ProjectPredictiveDialer
+
+    :return:
+    """
 
     setup_logging()
 
@@ -61,6 +70,7 @@ def main():
 
     # The analytic algorithm. There are problems with this and I would question whether it will even work using real
     # data rather than synthetic data.
+
     #cc = SimulationAnalytic()
     cc.start(cl)
 
