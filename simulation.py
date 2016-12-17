@@ -24,9 +24,11 @@ class Simulation:
 
     MAX_CALLS_TO_GENERATE = 100
 
-    def __init__(self, stop_immediately_when_no_calls, number_agents=40):
+    def __init__(self, stop_immediately_when_no_calls, number_agents=40, generate_history_file=True):
         self._df = {}
         self._calling_list = None
+
+        self._generate_history_file = generate_history_file
 
         self._number_agents = number_agents
         self._number_free_agents = number_agents
@@ -148,9 +150,10 @@ class Simulation:
                 if self.stop_immediately_when_no_calls or (self.number_all_calls() == 0):
                     still_going = False
 
-        df = pd.DataFrame.from_dict(self._history, orient='index')
-        log.debug(df)
-        df.to_pickle('history.pkl')
+        if self.generate_history_file:
+            df = pd.DataFrame.from_dict(self._history, orient='index')
+            log.debug(df)
+            df.to_pickle('history.pkl')
 
         log.info('Finished. Time is: {}'.format(self.millis_to_hours(self._current_time)))
 
