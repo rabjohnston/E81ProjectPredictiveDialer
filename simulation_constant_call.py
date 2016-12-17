@@ -5,9 +5,9 @@ import logging as log
 
 class SimulationConstantCall(Simulation):
 
-    def __init__(self, dial_level = 1, stop_immediately_when_no_calls = False, generate_history_file=True):
+    def __init__(self, dial_level = 1, stop_immediately_when_no_calls = False, number_agents=40, generate_history_file=True):
 
-        Simulation.__init__(self, stop_immediately_when_no_calls, generate_history_file=generate_history_file)
+        Simulation.__init__(self, stop_immediately_when_no_calls, number_agents=number_agents, generate_history_file=generate_history_file)
 
         if dial_level < 0:
             dial_level = 0

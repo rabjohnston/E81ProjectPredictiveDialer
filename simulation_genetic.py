@@ -38,8 +38,8 @@ class SimulationGenetic(SimulationConstantCall):
 
             return fitness
 
-    def __init__(self):
-        SimulationConstantCall.__init__(self)
+    def __init__(self, number_agents=40):
+        SimulationConstantCall.__init__(self, number_agents=40)
 
 
 
