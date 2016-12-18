@@ -92,6 +92,8 @@ class Simulation:
 
         self._dial_level_recalc_period = Simulation.ONE_MINUTE
 
+        # If the dial level includes fractional calls then remember the remainder so we can use it in the next
+        # period.
         self._fractional_call = 0
 
         # We'll not let the dial level get above a certain level
@@ -127,8 +129,14 @@ class Simulation:
     def number_trunks_in_use(self):
         return self.number_created_calls() + self.number_queued_calls() + self.number_talking_calls() + self.number_ringing_calls()
 
-    def start(self, calling_list, duration_shift = DEFAULT_SHIFT_LENGTH):
 
+    def start(self, calling_list, duration_shift = DEFAULT_SHIFT_LENGTH):
+        """
+        Start the dialer.
+        :param calling_list:
+        :param duration_shift:
+        :return:
+        """
         log.info('Running simulation for {} mins with {} agents'.format(self.millis_to_hours(duration_shift),
                                                                         self._number_agents))
         log.debug('stop_immediately set to {}'.format(self.stop_immediately_when_no_calls))
@@ -171,7 +179,10 @@ class Simulation:
 
 
     def _tick(self):
-
+        """
+        An epoch has gone past. Update the state of the system.
+        :return:
+        """
         self._update_agent_stats()
 
         self.handle_call_events()
@@ -186,6 +197,10 @@ class Simulation:
 
 
     def calculate(self):
+        """
+        Determine whether we need to caclulate the dial level
+        :return:
+        """
 
         if self._current_time % self._dial_level_recalc_period == 0:
             self._dial_level = self.recalc_dial_level()
@@ -202,7 +217,11 @@ class Simulation:
 
 
     def generate_call(self, number_calls=1):
-        #log.debug('{}: make call'.format(self.millis_to_hours(self._current_time)))
+        """
+        Retrieve a number from the calling list and 'dial' it.
+        :param number_calls:
+        :return:
+        """
         call = None
         for i in range(0, int(number_calls)):
             call = self.get_next_calling_list_entry(call)
@@ -241,6 +260,11 @@ class Simulation:
 
 
     def handle_ringing(self, call):
+        """
+        Handle a ringing call.
+        :param call:
+        :return:
+        """
         log.debug('{}: {}: ringing.'.format(self.millis_to_hours(self._current_time), call.unique_id))
 
         self._created_calls.pop(call.unique_id)
@@ -249,6 +273,11 @@ class Simulation:
 
 
     def handle_answered(self, call):
+        """
+        Handle an answered call
+        :param call:
+        :return:
+        """
         log.debug('{}: {}: answered.'.format(self.millis_to_hours(self._current_time), call.unique_id))
         self._ringing_calls.pop(call.unique_id)
         self.total_number_answered_calls += 1

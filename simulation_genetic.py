@@ -2,7 +2,6 @@ from simulation_constant_call import SimulationConstantCall
 from simulation import Simulation
 from calling_list import CallingList
 from collections import OrderedDict
-import genetic
 import datetime
 import random
 import math
@@ -22,16 +21,15 @@ class SimulationGenetic(SimulationConstantCall):
             return self.fitness() > other.fitness()
 
         def fitness(self):
-
+            """
+            Our fitness function rewards a higher Talk Time (agent utilisation)
+            and discourages a high abandonment rate.
+            :return:
+            """
             fitness = self.talk_time
-            #
-            # # How much have we gone over the max abandonment rate
+
+            # How much have we gone over the max abandonment rate
             over_abandoned = self.abandonment_rate - self.max_abandonment_rate
-            # if over_abandoned > 0:
-            #     # We gone over. Penalise a little for just going over but get serious the higher it goes, e.g.
-            #     # 1 percent point over will be penalised by 10%, 2 percent points over will be penalised by 40%
-            #     penalty = ((over_abandoned * over_abandoned)*1000) * self.talk_time
-            #     fitness += penalty
 
             if over_abandoned > 0:
                 fitness = -over_abandoned
@@ -62,16 +60,6 @@ class SimulationGenetic(SimulationConstantCall):
         self._mutate_probability = 0.1
 
 
-    # def get_next_calling_list_entry(self, call):
-    #     call = self._calling_list.get_call()
-    #
-    #     if call is not None:
-    #         # Save this calling list entry for later use by genetic algorithm
-    #         self._stored_calling_list_entry.append(call)
-    #
-    #     return call
-
-
     def recalc_dial_level(self):
         """
         Based on the dial level, calculate how many calls we need to generate
@@ -89,7 +77,10 @@ class SimulationGenetic(SimulationConstantCall):
 
 
     def rerun_past_calls(self):
-
+        """
+        Run the genetic algorithm on T-1 call data
+        :return:
+        """
         log.info('')
         log.info('Running Generic Algorithm Simulation')
         log.info('')
@@ -111,6 +102,11 @@ class SimulationGenetic(SimulationConstantCall):
 
 
     def evolve(self, population):
+        """
+        Eveolve this generation into the next.
+        :param population:
+        :return:
+        """
         for c in population:
             cl = CallingList(list(self._stored_calling_list_entry[self._last_stored_calling_list_entry:]),
                              list(self._calling_list._queued_calls))
@@ -135,7 +131,11 @@ class SimulationGenetic(SimulationConstantCall):
 
 
     def regenerate_population(self, parents):
-
+        """
+        Regenerate the population pool by adding new offspring.
+        :param parents:
+        :return:
+        """
         population = parents
         number_parents = len(parents)
         while len(population) < self.population_size:
@@ -157,6 +157,12 @@ class SimulationGenetic(SimulationConstantCall):
 
 
     def crossover(self, parent1, parent2):
+        """
+        Our crossover strategy is based on weighted averages.
+        :param parent1:
+        :param parent2:
+        :return:
+        """
         weight = random.random()
         child1_dl = (weight * parent1.dial_level) + ((1 - weight) * parent2.dial_level)
         child2_dl = (weight * parent2.dial_level) + ((1 - weight) * parent1.dial_level)
